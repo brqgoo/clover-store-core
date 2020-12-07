@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/ipfs-http-client@48.1.1/dist/index.min.js"></script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script> -->
+    <script src="https://cdn.ethers.io/lib/ethers-5.0.umd.min.js" type="text/javascript">
+    </script>
+    <style>
+        body {
+            background: #142E48;
+            margin: 0px;
+        }
+
+        .container {
+            border-radius: 32px;
+            background: #F2B840;
+            box-shadow: 0px 4px 0px 0px #866726;
+            height: 806px;
+            width: 720px;
+            margin: auto;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        .title {
+            color: #142E48;
+            font-family: Roboto;
+            font-weight: bold;
+            font-size: 18px;
+            line-height: normal;
+            letter-spacing: 0px;
+            text-align: left;
+        }
+
+        .inputBlock {
+            height: 48px;
+            width: 640px;
+            border-radius: 12px;
+            background: #142E48;
+            border: 1px solid #E88A34;
+            color: white;
+            font-size: 18px;
+        }
+
+        .inputbtn {
+            border-radius: 5px;
+            background: #142E48;
+            box-shadow: 0px 4px 0px 0px #00000040;
+            border: none;
+            color: #F2B840;
+            font-family: PingFang HK;
+            font-size: 14px;
+            line-height: normal;
+            letter-spacing: 0px;
+            text-align: left;
+            padding: 8px;
+        }
+
+        .submitBtn {
+            width: 320px;
+            height: 56px;
+            margin-left: 200px;
+            margin-top: 149px;
+            border-radius: 12px;
+            color: #F2B840;
+            font-family: Roboto;
+            font-weight: bold;
+            font-size: 18px;
+            line-height: normal;
+            letter-spacing: 0px;
+            text-align: center;
+            background: #142E48;
+            box-shadow: 0px 4px 0px 0px #000000;
+        }
+
+        .queryBtn {
+            width: 50px;
+            height: 35px;
+            margin-right: 0px;
+            margin-top: 0px;
+            border-radius: 12px;
+            color: #F2B840;
+            font-family: Roboto;
+            font-weight: bold;
+            font-size: 10px;
+            line-height: normal;
+            letter-spacing: 0px;
+            text-align: center;
+            background: #142E48;
+            box-shadow: 0px 4px 0px 0px #000000;
+        }
+
+        .filePath {
+            color: #142E48;
+            font-family: PingFang HK;
+            font-size: 14px;
+            line-height: normal;
+            letter-spacing: 0px;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div style=" margin-left: 40px;margin-top: 121px;">
+            <span class="title">App Name</span>
+        </div>
+        <div style="margin-left: 40px;margin-top: 24px;">
+            <input type="text" id="AppName" class="inputBlock" />
+        </div>
+
+        <div style=" margin-left: 40px;margin-top: 24px;">
+            <span class="title">App Describe</span>
+        </div>
+        <div style="margin-left: 40px;margin-top: 24px;">
+            <input type="text" id="Describe" class="inputBlock" />
+        </div>
+
+        <div style="margin-left: 40px;margin-top: 48px;">
+            <span class="title">App Icon</span>
+            <input type='file' id="AppIcon" style="margin-left: 24px;visibility: hidden;position: absolute;"
+                onchange="changePath(1)" />
+            <button class="inputbtn" style="margin-left: 24px;" onClick="select(1)">select file</button>
+            <label id="iconPath" class="filePath">
+        </div>
+
+        <div style="margin-left: 40px;margin-top: 24px;">
+            <span class="title">App Zip</span>
+            <input type='file' id="file" style="margin-left: 24px;visibility: hidden;position: absolute;"
+                onchange="changePath(2)" />
+            <button class="inputbtn" style="margin-left: 33px;" onClick="select(2)">select file</button>
+            <label id="filePath" class="filePath"></label>
+        </div>
+
+        <div>
+            <button type="button" onClick="captureFile()" class="submitBtn">Submit</button>
+            <button type="button" onClick="QueryBtnEvent()" class="queryBtn">Query</button>
+        </div>
+        <div style="margin-left: 325px;margin-top: 25px;">
+            <label id="resault" class="filePath" style="font-weight: bold;"></label>
+        </div>
+    </div>
+
+    <script>
+
+        var appNamePath = 'sk/AppName.txt';                                     //配置项目文件路径
+        var appDescribePath = 'sk/Describe.txt';
+        var appIconPath = 'sk/icon.png';
+        var appZipPath = 'sk/app.zip';
+
+        var account = "";
+        var abi='[{"inputs":[{"internalType":"string","name":"_name","type":"string"},{"internalType":"string","name":"_desc","type":"string"},{"internalType":"string","name":"_source","type":"string"},{"internalType":"string","name":"_icon","type":"string"}],"name":"addProject","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"components":[{"internalType":"string","name":"name","type":"string"},{"internalType":"string","name":"desc","type":"string"},{"internalType":"string","name":"source","type":"string"},{"internalType":"string","name":"icon","type":"string"},{"internalType":"uint256","name":"version","type":"uint256"},{"internalType":"bytes32","name":"uuid","type":"bytes32"},{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"address","name":"owner","type":"address"},{"internalType":"enum CloverOsProject.ProjectStatus","name":"status","type":"uint8"}],"indexed":false,"internalType":"struct CloverOsProject.Project","name":"info","type":"tuple"}],"name":"NewProject","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"controller","type":"address"},{"components":[{"internalType":"string","name":"name","type":"string"},{"internalType":"string","name":"desc","type":"string"},{"internalType":"string","name":"source","type":"string"},{"internalType":"string","name":"icon","type":"string"},{"internalType":"uint256","name":"version","type":"uint256"},{"internalType":"bytes32","name":"uuid","type":"bytes32"},{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"address","name":"owner","type":"address"},{"internalType":"enum CloverOsProject.ProjectStatus","name":"status","type":"uint8"}],"indexed":false,"internalType":"struct CloverOsProject.Project","name":"info","type":"tuple"}],"name":"ProjectStatusChanged","type":"event"},{"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"},{"internalType":"string","name":"_name","type":"string"},{"internalType":"string","name":"_desc","type":"string"},{"internalType":"string","name":"_source","type":"string"},{"internalType":"string","name":"_icon","type":"string"}],"name":"updateProject","outputs":[],"stateMutability":"nonpayable","type":"function"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"controller","type":"address"},{"components":[{"internalType":"string","name":"name","type":"string"},{"internalType":"string","name":"desc","type":"string"},{"internalType":"string","name":"source","type":"string"},{"internalType":"string","name":"icon","type":"string"},{"internalType":"uint256","name":"version","type":"uint256"},{"internalType":"bytes32","name":"uuid","type":"bytes32"},{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"address","name":"owner","type":"address"},{"internalType":"enum CloverOsProject.ProjectStatus","name":"status","type":"uint8"}],"indexed":false,"internalType":"struct CloverOsProject.Project","name":"info","type":"tuple"}],"name":"UpdateProject","type":"event"},{"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"},{"internalType":"enum CloverOsProject.ProjectStatus","name":"_status","type":"uint8"}],"name":"updateProjectStatusByAdmin","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"},{"internalType":"enum CloverOsProject.ProjectStatus","name":"_status","type":"uint8"}],"name":"updateProjectStatusByOwner","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"admin","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"developers","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_start","type":"uint256"},{"internalType":"uint256","name":"_end","type":"uint256"}],"name":"getProjects","outputs":[{"components":[{"internalType":"string","name":"name","type":"string"},{"internalType":"string","name":"desc","type":"string"},{"internalType":"string","name":"source","type":"string"},{"internalType":"string","name":"icon","type":"string"},{"internalType":"uint256","name":"version","type":"uint256"},{"internalType":"bytes32","name":"uuid","type":"bytes32"},{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"address","name":"owner","type":"address"},{"internalType":"enum CloverOsProject.ProjectStatus","name":"status","type":"uint8"}],"internalType":"struct CloverOsProject.Project[]","name":"pjs","type":"tuple[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"isDevelover","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"projects","outputs":[{"internalType":"string","name":"name","type":"string"},{"internalType":"string","name":"desc","type":"string"},{"internalType":"string","name":"source","type":"string"},{"internalType":"string","name":"icon","type":"string"},{"internalType":"uint256","name":"version","type":"uint256"},{"internalType":"bytes32","name":"uuid","type":"bytes32"},{"internalType":"uint256","name":"id","type":"uint256"},{"internalType":"address","name":"owner","type":"address"},{"internalType":"enum CloverOsProject.ProjectStatus","name":"status","type":"uint8"}],"stateMutability":"view","type":"function"}]';
+        var address = '0x6656Bb2064590264ecc5E4F9544947e1895CDB8A';
+        var erc20;
+        async function login() {
+            if (typeof window.ethereum === 'undefined') {
+                window.alert('Please install MetaMask first.');
+            } else {
+                var accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+                if (accounts && accounts.length > 0) {
+                    account = accounts[0];
+                }
+                ethereum.on('accountsChanged', function (accounts) {
+                    if (accounts.length == 0) {
+                        account = "";
+                    } else {
+                        account = accounts[0];
+                    }
+                    console.log("Change Account", account);
+                });
+                ethereum.on('chainChanged', (_chainId) => window.location.reload());
+                var provider = new ethers.providers.Web3Provider(window.web3.currentProvider);
+                erc20 = new ethers.Contract(address, abi, provider.getSigner());
+            }
+        }
+
+        login();
+
+        async function addProject([_name, _desc, _source, _icon]) {                                 //添加项目
+            console.log("-------[_name, _desc, _source, _icon]---------", [_name, _desc, _source, _icon]);
+            if (typeof window.ethereum !== 'undefined') {
+                await erc20.functions.addProject(_name, _desc, _source, _icon);                     //{ nonce: 3, gasPrice: 100 * 1e9, gasLimit: 500000 }
+            }
+        }
+
+        async function getProjects(_start, _end) {
+            if (typeof window.ethereum !== 'undefined') {                                               //拿项目列表数据
+                return await erc20.functions.getProjects(_start, _end);
+            }
+        }
+
+        function QueryBtnEvent() {
+            console.log(getProjects(0, 100));
+        }
+
+        function select(value) {
+            if (value == 1) {
+                document.getElementById("AppIcon").click();
+            } else if (value == 2) {
+                document.getElementById("file").click();
+            }
+        }
+        function changePath(value) {
+            if (value == 1) {
+                let p = document.getElementById("AppIcon").value;
+                document.getElementById("iconPath").innerHTML = p;
+            } else if (value == 2) {
+                let p = document.getElementById("file").value;
+                document.getElementById("filePath").innerHTML = p;
+            }
+        }
+        let IPFS = IpfsHttpClient({
+            host: "18.138.102.196",
+            port: "5002",
+            protocol: "http",
+        });
+        function captureFile() {
+            let name = document.getElementById("AppName").value;
+            let describe = document.getElementById("Describe").value;
+            let icon = document.getElementById("AppIcon").files;
+            let file = document.getElementById("file").files;
+            if (name != "" && describe != "" && icon.length != 0 && file.length != 0) {
+                saveToIpfs({
+                    AppName: name,
+                    Describe: describe,
+                    AppIcon: icon,
+                    File: file
+                });
+            }
+        };
+
+        async function saveToIpfs(obj) {
+            console.log(obj.AppName, obj.Describe, obj.AppIcon, obj.File);
+            try {
+                const added = await IPFS.addAll([{
+                    path: appNamePath,
+                    content: obj.AppName
+                },
+                {
+                    path: appDescribePath,
+                    content: obj.Describe
+                },
+                {
+                    path: appIconPath,
+                    content: obj.AppIcon[0]
+                },
+                {
+                    path: appZipPath,
+                    content: obj.File[0]
+                }
+                ], { progress: (prog) => console.log(`received: ${prog}`) })
+                let info = {};
+                for await (let item of added) {
+                    console.log(item);
+                    if (item.path === appNamePath) {
+                        info._name = obj.AppName;
+                    }
+                    else if (item.path === appDescribePath) {
+                        info._desc = item.cid.string;
+                    }
+                    else if (item.path === appIconPath) {
+                        info._icon = item.cid.string;
+                    }
+                    else if (item.path === appZipPath) {
+                        info._source = item.cid.string;
+                    }
+                }
+                addProject([info._name, info._desc, info._source, info._icon]);
+                init();
+            } catch (err) {
+                console.error(err);
+                result("FAIL");
+            }
+        }
+
+        function init() {
+            document.getElementById('AppName').value = "";
+            document.getElementById('Describe').value = "";
+            document.getElementById('iconPath').innerHTML = "";
+            document.getElementById('filePath').innerHTML = "";
+            result("SUCCEED")
+        }
+
+        function result(msg) {
+            document.getElementById('resault').innerHTML = msg;
+            setTimeout(() => {
+                document.getElementById('resault').innerHTML = "";
+            }, 5000);
+        }
+    </script>
+</body>
+
+</html>

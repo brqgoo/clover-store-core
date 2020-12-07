@@ -1,0 +1,32 @@
+{
+   "name": "demo",
+    "version": "1.0.0",
+    "description": "这是一个简单的apidoc的demo",
+    "title": "demo",
+    "url": "https://api.github.com/v1",
+    "sampleUrl": "https://api.github.com/v1/test",
+    "header": {
+        "title": "header",
+        "filename": "header.md"
+    },
+    "footer": {
+        "title": "footer",
+        "filename": "footer.md"
+    },
+    "order": [
+        "Error",
+        "Define",
+        "PostTitleAndError",
+        "PostError"
+    ]
+}
+/**
+ * @api {get} /user/:id Request User information
+ * @apiName GetUser
+ * @apiGroup User
+ *
+ * @apiParam {Number} id Users unique ID.
+ *
+ * @apiSuccess {String} firstname Firstname of the User.
+ * @apiSuccess {String} lastname  Lastname of the User.
+ */
